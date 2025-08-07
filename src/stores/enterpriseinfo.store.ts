@@ -2,8 +2,8 @@
 import { create} from "zustand";
 import type { StateCreator} from "zustand";
 import { devtools, persist } from "zustand/middleware";
-import { EnterPriseInfoService } from "../services/enterprise.servicio";
 import type { IenterpriseInfo } from "../interfaces/enterprise.interface";
+import { EnterPriseInfoService } from "../services";
 
  interface IenterpriseInfoStore {
     enterpriseInfo: IenterpriseInfo | null;
