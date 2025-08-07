@@ -1,4 +1,4 @@
-import type{ StateCreator } from "zustand";
+import type { StateCreator } from "zustand";
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { AuthService } from "../services/auth.service";
