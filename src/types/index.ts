@@ -23,6 +23,7 @@ export interface Patient {
   address: string;
   emergencyContact?: string;
   emergencyPhone?: string;
+  medicalHistory:ClinicalHistory[];
   avatar?: string;
   createdAt: string;
   updatedAt: string;

@@ -22,8 +22,28 @@ import { Dentogram } from './Dentogram';
 import { usePatients } from '../../hooks/usePatients';
 import { toast } from 'sonner';
 
+interface medicalRecords{
+  id: string;
+  patientId: string;
+  patient: {
+    name: string;
+    lastName: string;
+    dni: string;
+    avatar: string | null | undefined;
+  };
+  date: string;
+  diagnosis: string;
+  treatment: string;
+  observations: string;
+  employeeId: string;
+  employee: {
+    name: string;
+  };
+  nextAppointment: string;
+  createdAt: string;
+}
 // Datos simulados de historias clínicas
-const mockMedicalRecords = [
+const mockMedicalRecords:medicalRecords[] = [
   {
     id: '1',
     patientId: '1',
@@ -102,7 +122,7 @@ export const MedicalRecords: React.FC = () => {
       const patient = patients.find(p => p.id === formData.patientId);
       if (!patient) throw new Error('Paciente no encontrado');
 
-      const newRecord = {
+      const newRecord:medicalRecords = {
         id: Date.now().toString(),
         patientId: formData.patientId,
         patient: { 
@@ -121,7 +141,7 @@ export const MedicalRecords: React.FC = () => {
         createdAt: new Date().toISOString(),
       };
 
-      setMedicalRecords(prev => [newRecord, ...prev]);
+      setMedicalRecords(prevItems => [...prevItems, newRecord]);
       setIsCreateDialogOpen(false);
       setFormData({
         patientId: '',

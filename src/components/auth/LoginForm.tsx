@@ -18,7 +18,8 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export const LoginForm: FC = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const { login, loading } = useAuthStore();
+  const  login = useAuthStore(state=>state.login);
+  const  loading = useAuthStore(state=> state.loading);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),

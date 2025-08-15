@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -16,6 +15,8 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/auth.store';
+import type { ReactNode } from 'react';
+import type { JSX } from 'react/jsx-runtime';
 
 // Datos simulados para gráficos
 const salesData = [
@@ -41,16 +42,25 @@ const appointmentsData = [
   { name: 'Sáb', citas: 10 },
 ];
 
+interface stats{
+  title: string;
+  value: string;
+  change: string;
+  changeType: 'positive' | 'negative' | 'neutral';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  icon: ReactNode| JSX.Element | any;
+  color: string;
+}
 export const Dashboard: React.FC = () => {
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'administrator';
 
-  const adminStats = [
+  const adminStats:stats[] = [
     {
       title: 'Pacientes Total',
       value: '1,234',
       change: '+12%',
-      changeType: 'positive' as const,
+      changeType: 'positive',
       icon: Users,
       color: 'bg-goodent-primary',
     },
@@ -58,7 +68,7 @@ export const Dashboard: React.FC = () => {
       title: 'Citas Hoy',
       value: '23',
       change: '+5%',
-      changeType: 'positive' as const,
+      changeType: 'positive',
       icon: Calendar,
       color: 'bg-goodent-secondary',
     },
@@ -66,7 +76,7 @@ export const Dashboard: React.FC = () => {
       title: 'Ingresos del Mes',
       value: '$ 45,231',
       change: '+18%',
-      changeType: 'positive' as const,
+      changeType: 'positive',
       icon: DollarSign,
       color: 'bg-green-500',
     },
@@ -74,18 +84,18 @@ export const Dashboard: React.FC = () => {
       title: 'Empleados Activos',
       value: '8',
       change: '+2',
-      changeType: 'positive' as const,
+      changeType: 'positive',
       icon: UserCheck,
       color: 'bg-blue-500',
     },
   ];
 
-  const employeeStats = [
+  const employeeStats:stats[] = [
     {
       title: 'Mis Pacientes Hoy',
       value: '8',
       change: '+2',
-      changeType: 'positive' as const,
+      changeType: 'positive',
       icon: Users,
       color: 'bg-goodent-primary',
     },
@@ -93,7 +103,7 @@ export const Dashboard: React.FC = () => {
       title: 'Ventas del Día',
       value: '$ 1,250',
       change: '+15%',
-      changeType: 'positive' as const,
+      changeType: 'positive',
       icon: DollarSign,
       color: 'bg-goodent-secondary',
     },
@@ -101,7 +111,7 @@ export const Dashboard: React.FC = () => {
       title: 'Horas Trabajadas',
       value: '6.5h',
       change: 'Normal',
-      changeType: 'neutral' as const,
+      changeType: 'neutral',
       icon: Clock,
       color: 'bg-green-500',
     },
@@ -109,7 +119,7 @@ export const Dashboard: React.FC = () => {
       title: 'Citas Completadas',
       value: '12',
       change: '+3',
-      changeType: 'positive' as const,
+      changeType: 'positive',
       icon: Activity,
       color: 'bg-blue-500',
     },
