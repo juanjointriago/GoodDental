@@ -28,12 +28,19 @@ import {
   X,
 } from "lucide-react";
 import { useState, type FC } from "react";
-import { useAuthStore } from "../../stores/auth.store";
+import { useAuthStore, type Role } from "../../stores/auth.store";
 import { useThemeStore } from "../../stores/theme.store";
 import { useRouterStore } from "../../stores/router.store";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
+}
+interface MenuItem{
+  id: string;
+  label: string;
+  icon: React.ReactNode | any;
+  href: string;
+  roles: Role[];
 }
 
 export const DashboardLayout: FC<DashboardLayoutProps> = ({
@@ -46,7 +53,8 @@ export const DashboardLayout: FC<DashboardLayoutProps> = ({
   const { theme, toggleTheme } = useThemeStore();
   const { currentRoute, navigate } = useRouterStore();
 
-  const menuItems = [
+  
+  const menuItems:MenuItem[] = [
     {
       id: "dashboard",
       label: "Dashboard",

@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { AuthService } from "../services/auth.service";
 
-type Role = 'administrator' | 'employee' | 'doctor' | 'customer';
+export type Role = 'administrator' | 'employee' | 'doctor' | 'customer';
 
 export interface IUser {
   id: string;
