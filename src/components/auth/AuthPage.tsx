@@ -89,6 +89,7 @@ export const AuthPage: FC = () => {
           </CardContent>
         </Card> */}
       </div>
+        <span className="fixed bottom-4 left-4 text-xs text-muted-foreground opacity-70">Ver. {import.meta.env.VITE_VERSION}</span>
     </div>
   );
 };
