@@ -2,28 +2,7 @@ import type { StateCreator } from "zustand";
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { AuthService } from "../services/auth.service";
-
-export type Role = 'administrator' | 'employee' | 'doctor' | 'customer';
-
-export interface IUser {
-  id: string;
-  email: string;
-  name: string;
-  password: string;
-  role: Role;
-  avatar?: string;
-  photoURL?: string;
-  address:string;
-  bornDate: number;
-  cc: string;
-  phone: string;
-  city: string;
-  country: string;
-  isActive: boolean;
-  lastLogin?: Date;
-  createdAt: number;
-  updatedAt: number;
-}
+import type { IUser } from "../interfaces/users.interface";
 
 interface AuthState {
   user: IUser | null;
@@ -32,7 +11,7 @@ interface AuthState {
   
   // Actions
   login: (email: string, password: string) => Promise<void>;
-  register: (userData: Omit<IUser, 'id' | 'createdAt' | 'lastLogin'>) => Promise<void>;
+  register: (userData: Omit<IUser, 'id' | 'createdAt' | 'lastLogin'>) => Promise<{ isAuthenticated: boolean; message: string }>;
   logout: () => void;
   setUser: (user: IUser | null) => void;
   setLoading: (loading: boolean) => void;
@@ -42,28 +21,28 @@ interface AuthState {
 
 // Mock users para demo
 // const mockUsers: User[] = [
-//   {
-//     id: '1',
-//     email: 'admin@goodent.com',
-//     password: 'admin123',
-//     name: 'Dr. María González',
-//     role: 'administrator',
-//     avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&h=150&fit=crop&crop=face',
-//     isActive: true,
-//     createdAt: new Date('2024-01-01'),
-//     lastLogin: new Date(),
-//   },
-//   {
-//     id: '2',
-//     email: 'empleado@goodent.com',
-//     password: 'empleado123',
-//     name: 'Ana Rodríguez',
-//     role: 'employee',
-//     avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-//     isActive: true,
-//     createdAt: new Date('2024-01-15'),
-//     lastLogin: new Date(),
-//   },
+ //   {
+ //     id: '1',
+ //     email: 'admin@goodent.com',
+ //     password: 'admin123',
+ //     name: 'Dr. María González',
+ //     role: 'administrator',
+ //     avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&h=150&fit=crop&crop=face',
+ //     isActive: true,
+ //     createdAt: Date.now(),
+ //     lastLogin: Date.now(),
+ //   },
+ //   {
+ //     id: '2',
+ //     email: 'empleado@goodent.com',
+ //     password: 'empleado123',
+ //     name: 'Ana Rodríguez',
+ //     role: 'employee',
+ //     avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
+ //     isActive: true,
+ //     createdAt: Date.now(),
+ //     lastLogin: Date.now(),
+ //   },
 // ];
 
 export const storeAPI: StateCreator<AuthState, []> = (set, get) => ({
@@ -90,7 +69,12 @@ export const storeAPI: StateCreator<AuthState, []> = (set, get) => ({
       },
 
       register: async (userData) => {
-        await AuthService.signUp(userData);
+        set({ loading: true });
+        try {
+          return await AuthService.signUp(userData);
+        } finally {
+          set({ loading: false });
+        }
       },
 
       logout: () => {

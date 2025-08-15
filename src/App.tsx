@@ -108,7 +108,7 @@ export default function App() {
             <img src="/assets/img/logo.png" alt="Good Dental Logo" className="w-50 h-20" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-goodent-primary">Good Dental</h2>
+            <h2 className="text-xl font-semibold text-goodent-primary">{import.meta.env.VITE_APP_TITLE ?? "Clinical"}</h2>
             <p className="text-sm text-muted-foreground">
               {!initialized ? 'Inicializando...' : 'Cargando sistema...'}
             </p>

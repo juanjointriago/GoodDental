@@ -22,7 +22,7 @@ const registerSchema = z.object({
     city: z.string().optional(),
     country: z.string().optional(),
     confirmPassword: z.string(),
-    role: z.enum(['administrator', 'employee']),
+    role: z.enum(['administrator', 'employee',]),
     avatar: z.string().optional(),
     photoURL: z.string().optional(),
     lastlogin: z.number().optional(),
@@ -63,9 +63,10 @@ export const RegisterForm: FC = () => {
     },
   });
 
-  const onSubmit = async (data: RegisterFormData) => {
+  const onSubmit = async (data: RegisterFormData, event?: React.BaseSyntheticEvent) => {
+    event?.preventDefault();
     try {
-      await register({
+      const response = await register({
         name: data.name,
         email: data.email,
         role: data.role,
@@ -81,9 +82,15 @@ export const RegisterForm: FC = () => {
         photoURL: data.photoURL!,
         updatedAt: Date.now()
       });
-      toast.success('¡Cuenta creada exitosamente!');
+
+      if (response.isAuthenticated) {
+        toast.success(response.message);
+        form.reset();
+      } else {
+        toast.error(response.message);
+      }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Error al crear la cuenta');
+      toast.error(error instanceof Error ? error.message : 'Ocurrió un error inesperado');
     }
   };
 
@@ -148,8 +155,7 @@ export const RegisterForm: FC = () => {
                 </FormControl>
                 <SelectContent>
                   {import.meta.env.DEV &&<SelectItem value="administrator">Administrador</SelectItem>}
-                  <SelectItem value="employee">Empleado</SelectItem>
-                  <SelectItem value="doctor">Doctor</SelectItem>
+                  <SelectItem value="employee">Médico</SelectItem>
                   <SelectItem value="patient">Patient</SelectItem>
                 </SelectContent>
               </Select>

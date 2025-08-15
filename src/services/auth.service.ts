@@ -11,7 +11,7 @@ import {
 } from "firebase/auth";
 
 import { getItemById, setItem } from "../db/fb.helper";
-import type { IUser } from "../stores/auth.store";
+import type { IUser } from "../interfaces/users.interface";
 
 
 export class AuthService {
@@ -63,7 +63,6 @@ export class AuthService {
       name,
       role,
       address,
-      bornDate,
       cc,
       phone,
       city,
@@ -74,7 +73,7 @@ export class AuthService {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
-        password
+        password!
       );
       if (userCredential) {
         const { photoURL, uid } = userCredential.user;
@@ -82,19 +81,20 @@ export class AuthService {
         const dataUser:IUser = {
           id: uid,
           name,
+          lastName: '',
           email,
-          password: password || ''  ,
           role,
           photoURL: photoURL || '',
           phone,
           address,
-          bornDate,
+          birthDate: signUpUser.birthDate,
           cc,
           city,
           country,
           isActive: false,
           createdAt: Date.now(),
           updatedAt: Date.now(),
+          lastLogin: Date.now(),
         };
         await updateProfile(userCredential.user, { displayName: name });
         console.log('colecion de usuarios 😎 ',import.meta.env.VITE_COLLECTION_USERS);
@@ -133,13 +133,14 @@ export class AuthService {
         const dataUser:IUser = {
           id: uid,
           name: displayName || '',
+          lastName: "",
           email: email || '',
-          role: "employee",
+          role: "customer",
           password: firebaseUser.password || '',    
           photoURL: photoURL || '',
           phone: "",
           address: "",
-          bornDate: 0,
+          birthDate: 0,
           cc: "",
           city: "",
           country: "",

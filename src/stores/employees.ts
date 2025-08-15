@@ -1,46 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { Employee, PerformanceMetrics, Sale } from '../interfaces/employees.interface';
 
-export interface Employee {
-  id: string;
-  name: string;
-  lastName: string;
-  email: string;
-  dni: string;
-  phone: string;
-  position: string;
-  department: 'administration' | 'medical' | 'assistance' | 'cleaning';
-  salary: number;
-  hireDate: string;
-  status: 'active' | 'inactive' | 'suspended';
-  avatar?: string;
-  commissionRate?: number; // Para comisiones de ventas
-}
 
-export interface Sale {
-  id: string;
-  employeeId: string;
-  patientId: string;
-  patientName: string;
-  service: string;
-  amount: number;
-  commission: number;
-  date: string;
-  status: 'completed' | 'pending' | 'cancelled';
-  paymentMethod: 'cash' | 'card' | 'transfer';
-}
-
-export interface PerformanceMetrics {
-  employeeId: string;
-  month: string;
-  salesCount: number;
-  totalSales: number;
-  totalCommissions: number;
-  patientsSeen: number;
-  averageRating: number;
-  goalsAchieved: number;
-  goalsTotal: number;
-}
 
 interface EmployeeState {
   employees: Employee[];
@@ -72,15 +34,21 @@ const mockEmployees: Employee[] = [
   {
     id: '1',
     name: 'Dr. Carlos',
-    lastName: 'Mendoza',
     email: 'carlos.mendoza@goodent.com',
-    dni: '12345678',
+    lastName: 'Mendoza',
+    cc: '12345678',
     phone: '+593 99 111 2222',
     position: 'Dentista General',
     department: 'medical',
     salary: 4500.00,
     hireDate: '2023-01-15',
     status: 'active',
+    role: 'employee',
+    address: 'Av. Siempre Viva 123',
+    birthDate:787878,
+    city: 'Quito',
+    country: 'Ecuador',
+    isActive: true,
     commissionRate: 0.15, // 15% comisión
   },
   {
@@ -88,13 +56,19 @@ const mockEmployees: Employee[] = [
     name: 'Dra. María',
     lastName: 'García',
     email: 'maria.garcia@goodent.com',
-    dni: '87654321',
+    cc: '87654321',
     phone: '+593 98 333 4444',
     position: 'Ortodoncista',
     department: 'medical',
     salary: 5500.00,
     hireDate: '2023-03-01',
+    address: 'Av. Siempre Viva 456',
     status: 'active',
+    role: 'employee',
+    birthDate: 98989898,
+    city: 'Quito',
+    country: 'Ecuador',
+    isActive: true,
     commissionRate: 0.20, // 20% comisión
   },
   {
@@ -102,13 +76,19 @@ const mockEmployees: Employee[] = [
     name: 'Ana',
     lastName: 'López',
     email: 'ana.lopez@goodent.com',
-    dni: '11223344',
+    cc: '11223344',
     phone: '+593 96 555 6666',
     position: 'Asistente Dental',
     department: 'assistance',
     salary: 1800.00,
     hireDate: '2023-06-15',
+    address: 'Av. Siempre Viva 456',
+    role: 'employee',
+    birthDate: 98989898,
+    city: 'Quito',
+    country: 'Ecuador',
     status: 'active',
+    isActive: true,
     commissionRate: 0.05, // 5% comisión
   },
 ];

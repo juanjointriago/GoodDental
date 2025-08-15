@@ -115,6 +115,7 @@ export interface SaleItem {
   description: string;
 }
 
+type PaymentMethod = 'cash' | 'credit' | 'debit' | 'insurance';
 export interface Sale {
   id: string;
   patientId: string;
@@ -124,7 +125,7 @@ export interface Sale {
   tax: number;
   discount: number;
   total: number;
-  paymentMethod: 'cash' | 'card' | 'transfer' | 'credit';
+  paymentMethod: PaymentMethod;
   status: 'completed' | 'pending' | 'cancelled';
   receiptNumber: string;
   createdAt: string;
