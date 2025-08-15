@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, type FC } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { RegisterForm } from './RegisterForm';
 import { Sun, Moon } from 'lucide-react';
@@ -6,7 +6,7 @@ import { Button } from '../ui/button';
 import { LoginForm } from './LoginForm';
 import { useThemeStore } from '../../stores/theme.store';
 
-export const AuthPage: React.FC = () => {
+export const AuthPage: FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const { theme, toggleTheme } = useThemeStore();
 
@@ -69,7 +69,7 @@ export const AuthPage: React.FC = () => {
         </div>
 
         {/* Demo Credentials */}
-        <Card className="bg-goodent-light/50 border-goodent-primary/20">
+        {/* <Card className="bg-goodent-light/50 border-goodent-primary/20">
           <CardContent className="pt-6">
             <h4 className="text-sm font-medium text-goodent-primary mb-3">
               Credenciales de Demo:
@@ -87,7 +87,7 @@ export const AuthPage: React.FC = () => {
               </div>
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
     </div>
   );

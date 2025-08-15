@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, type FC } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -16,7 +16,7 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-export const LoginForm: React.FC = () => {
+export const LoginForm: FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { login, loading } = useAuthStore();
 
@@ -37,20 +37,20 @@ export const LoginForm: React.FC = () => {
     }
   };
 
-  const handleDemoLogin = (role: 'admin' | 'employee') => {
-    const credentials = {
-      admin: { email: 'admin@goodent.com', password: '123456' },
-      employee: { email: 'empleado@goodent.com', password: '123456' },
-    };
+  // const handleDemoLogin = (role: 'admin' | 'employee') => {
+  //   const credentials = {
+  //     admin: { email: 'admin@goodent.com', password: '123456' },
+  //     employee: { email: 'empleado@goodent.com', password: '123456' },
+  //   };
 
-    form.setValue('email', credentials[role].email);
-    form.setValue('password', credentials[role].password);
-  };
+  //   form.setValue('email', credentials[role].email);
+  //   form.setValue('password', credentials[role].password);
+  // };
 
   return (
     <div className="space-y-6">
       {/* Demo Buttons */}
-      <div className="flex gap-2">
+      {/* <div className="flex gap-2">
         <Button
           type="button"
           variant="outline"
@@ -69,7 +69,7 @@ export const LoginForm: React.FC = () => {
         >
           Demo Empleado
         </Button>
-      </div>
+      </div> */}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
