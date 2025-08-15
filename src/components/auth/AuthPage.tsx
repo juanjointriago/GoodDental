@@ -90,7 +90,8 @@ export const AuthPage: FC = () => {
           </CardContent>
         </Card> */}
       </div>
-        <span className="fixed bottom-4 left-4 text-xs text-muted-foreground opacity-70">Ver. {import.meta.env.VITE_VERSION}</span>
+        <a className='fixed bottom-4 left-4 text-xs text-muted-foreground opacity-70' href='http://purple-widget.com/' target='blank'>Producto de Purple Widget © 2025</a>
+        <span className="fixed bottom-4 right-4 text-xs text-muted-foreground opacity-70">Ver. {import.meta.env.VITE_VERSION}</span>
     </div>
   );
 };

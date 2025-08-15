@@ -103,7 +103,9 @@ export default function App() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
           <div className="w-16 h-16 bg-gradient-to-br from-goodent-primary to-goodent-secondary rounded-full flex items-center justify-center mx-auto animate-pulse">
-            <span className="text-white text-xl font-bold">G</span>
+            {/* <span className="text-white text-xl font-bold">G</span>
+             */}
+            <img src="/assets/img/logo.png" alt="Good Dental Logo" className="w-50 h-20" />
           </div>
           <div>
             <h2 className="text-xl font-semibold text-goodent-primary">Good Dental</h2>
