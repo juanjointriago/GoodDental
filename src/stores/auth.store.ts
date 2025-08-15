@@ -3,7 +3,7 @@ import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 import { AuthService } from "../services/auth.service";
 
-type Role = 'administrator' | 'employee';
+type Role = 'administrator' | 'employee' | 'doctor' | 'customer';
 
 export interface IUser {
   id: string;
@@ -80,25 +80,17 @@ export const storeAPI: StateCreator<AuthState, []> = (set, get) => ({
             set({ loading: true });
             set({ isAuthenticated: true, user: result.user });
             console.debug("USUARIO almacenado", get().user);
+            set({ loading: false });
+            
         } else {
             set({ isAuthenticated: false, user: undefined });
+            set({ loading: false });
             throw new Error(result.message || 'Error al iniciar sesión');
         }
       },
 
       register: async (userData) => {
-        const {email, password}= userData;
-        set({ loading: true });
-        const result = await AuthService.login(email, password);
-        console.debug('auth.store/StoreAPI/loginUser ', { result });
-        if (result.isAuthenticated && result.user) {
-            set({ isAuthenticated: true, user: result.user });
-            console.debug("USUARIO almacenado", get().user);
-        } else {
-            set({ isAuthenticated: false, user: undefined });
-            throw new Error(result.message || 'Error al iniciar sesión');
-        }
-        
+        await AuthService.signUp(userData);
       },
 
       logout: () => {
@@ -123,15 +115,16 @@ export const storeAPI: StateCreator<AuthState, []> = (set, get) => ({
       },
 
       checkAuth: async () => {
-        
-           console.debug('start checkAuthStatus=>')
+        console.debug('start checkAuthStatus=>')
         const user = await AuthService.checkStatus();
         if (user) {
             // console.debug('✅Authorized', JSON.stringify(user))
             set({ isAuthenticated: true, user });
+            
         } else {
             // console.debug('❌Unauthorized', JSON.stringify(user))
             set({ isAuthenticated: false, user: undefined });
+            set({ loading: false });
         }
        
       },

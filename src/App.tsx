@@ -56,7 +56,9 @@ const AppRouter: React.FC = () => {
 
 
 export default function App() {
-  const { user, loading, checkAuth } = useAuthStore();
+  const user  = useAuthStore(state=>state.user);
+  const  loading = useAuthStore(state=>state.loading);
+  const  checkAuth  = useAuthStore(state=>state.checkAuth);
   const { initializeTheme } = useThemeStore();
   const { fetchPatients } = usePatientsStore();
   const [initialized, setInitialized] = useState(false);

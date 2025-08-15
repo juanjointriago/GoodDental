@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, type FC } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -37,10 +37,11 @@ const registerSchema = z.object({
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
-export const RegisterForm: React.FC = () => {
+export const RegisterForm: FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { register, loading } = useAuthStore();
+  const register = useAuthStore(state=>state.register);
+  const loading = useAuthStore(state => state.loading);
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -146,8 +147,10 @@ export const RegisterForm: React.FC = () => {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
+                  {import.meta.env.DEV &&<SelectItem value="administrator">Administrador</SelectItem>}
                   <SelectItem value="employee">Empleado</SelectItem>
-                  <SelectItem value="administrator">Administrador</SelectItem>
+                  <SelectItem value="doctor">Doctor</SelectItem>
+                  <SelectItem value="patient">Patient</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />

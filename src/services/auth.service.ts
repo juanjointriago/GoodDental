@@ -20,7 +20,7 @@ export class AuthService {
     password: string
   ): Promise<{ user?: IUser; isAuthenticated: boolean; message: string }> => {  
     const auth = getAuth();
-    console.debug("✅login", { email, password });
+    // console.debug("✅login", { email });
     try {
       const { user } = await signInWithEmailAndPassword(auth, email, password);
       console.debug("✅", user.displayName);
@@ -28,9 +28,9 @@ export class AuthService {
         import.meta.env.VITE_COLLECTION_USERS,
         user.uid
       );
-      console.debug("Auth.Service/static login/ getItemById=>", {
-        firebaseUser,
-      });
+      // console.debug("Auth.Service/static login/ getItemById=>", {
+      //   firebaseUser,
+      // });
       if (firebaseUser && firebaseUser.isActive === false) {
         await signOut(auth);
         return { isAuthenticated: false, message: 'Su usuario está en proceso de aprobación' };
@@ -56,7 +56,7 @@ export class AuthService {
     }
   };
 
-  static signUp = async (signUpUser: IUser): Promise<{ isAuthenticated: boolean; message: string }> => {
+  static signUp = async (signUpUser: Omit<IUser, 'id' | 'createdAt' | 'lastLogin'>): Promise<{ isAuthenticated: boolean; message: string }> => {
     const {
       email,
       password,
@@ -74,10 +74,11 @@ export class AuthService {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
-        password!
+        password
       );
       if (userCredential) {
         const { photoURL, uid } = userCredential.user;
+        console.debug({userCredential});
         const dataUser:IUser = {
           id: uid,
           name,
@@ -96,6 +97,7 @@ export class AuthService {
           updatedAt: Date.now(),
         };
         await updateProfile(userCredential.user, { displayName: name });
+        console.log('colecion de usuarios 😎 ',import.meta.env.VITE_COLLECTION_USERS);
         await setItem(import.meta.env.VITE_COLLECTION_USERS, dataUser);
         //Add preffered info and Total fee for user
         await signOut(auth);
@@ -103,6 +105,7 @@ export class AuthService {
       }
       return { isAuthenticated: false, message: 'No se pudo registrar el usuario' };
     } catch (error: any) {
+      console.warn('Error al registrar el usuario',{error})
       await signOut(auth);
       return { isAuthenticated: false, message: `Error al registrar usuario: ${error.message}` };
     }
@@ -197,7 +200,7 @@ export class AuthService {
         );
         return FirestoreUser;
       } catch (error) {
-        console.debug(error);
+        console.warn("Unauthorized, invalid token",error);
         throw new Error("Unauthorized, invalid token");
       }
     }
