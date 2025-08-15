@@ -29,10 +29,11 @@ export const AuthPage: FC = () => {
       <div className="w-full max-w-md space-y-6">
         {/* Logo */}
         <div className="text-center">
-          <div className="w-20 h-20 bg-gradient-to-br from-goodent-primary to-goodent-secondary rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl">
-            <span className="text-white text-2xl font-bold">G</span>
+          <div className="w-60 h-60 bg-gradient-to-br from-goodent-primary to-goodent-secondary rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl">
+            {/* <span className="text-white text-2xl font-bold">G</span> */}
+            <img src="/assets/img/logo.png" alt="Good Dental Logo" className="w-50 h-20" />
           </div>
-          <h1 className="text-3xl font-bold text-goodent-primary mb-2">Goodent</h1>
+          {/* <h1 className="text-3xl font-bold text-goodent-primary mb-2">{import.meta.env.VITE_APP_TITLE ?? "Clinical"}</h1> */}
           <p className="text-muted-foreground">Sistema de Gestión Odontológica</p>
         </div>
 
