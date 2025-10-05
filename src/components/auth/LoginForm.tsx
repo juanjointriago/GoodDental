@@ -31,7 +31,7 @@ export const LoginForm: FC = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      await login(data.email, data.password);
+      await login(data);
       toast.success('¡Bienvenido a Goodent!');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Error al iniciar sesión');

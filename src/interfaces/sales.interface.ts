@@ -1,33 +1,22 @@
-// Tipos para autenticación y usuarios
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  role: 'administrator' | 'employee';
-  avatar?: string;
-  dni?: string;
-  phone?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+
 
 // Tipos para pacientes
-export interface Patient {
-  id: string;
-  dni: string;
-  name: string;
-  lastName: string;
-  email?: string;
-  phone: string;
-  birthDate: string;
-  address: string;
-  emergencyContact?: string;
-  emergencyPhone?: string;
-  medicalHistory:ClinicalHistory[];
-  avatar?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+// export interface Patient {
+//   id: string;
+//   dni: string;
+//   name: string;
+//   lastName: string;
+//   email?: string;
+//   phone: string;
+//   birthDate: string;
+//   address: string;
+//   emergencyContact?: string;
+//   emergencyPhone?: string;
+//   medicalHistory:ClinicalHistory[];
+//   avatar?: string;
+//   createdAt: string;
+//   updatedAt: string;
+// }
 
 // Tipos para dentograma
 export interface ToothStatus {

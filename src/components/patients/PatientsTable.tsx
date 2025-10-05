@@ -44,7 +44,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePatientsStore } from '../../stores/patients.store';
-import { useRouterStore } from '../../stores/router.store';
+import { useAppNavigation } from '../../hooks/useAppNavigation';
 import { PatientForm } from './PatientForm';
 
 export const PatientsTable: React.FC = () => {
@@ -59,22 +59,20 @@ export const PatientsTable: React.FC = () => {
     loading,
     searchTerm,
     selectedPatient,
+    filteredPatients,
     setSearchTerm,
     setSelectedPatient,
-    getFilteredPatients,
     deletePatient,
     fetchPatients,
   } = usePatientsStore();
 
-  const { navigate } = useRouterStore();
+  const { toMedicalRecords } = useAppNavigation();
 
   useEffect(() => {
     if (patients.length === 0) {
       fetchPatients();
     }
   }, [fetchPatients, patients.length]);
-
-  const filteredPatients = getFilteredPatients();
 
   const handleAddPatient = () => {
     setSelectedPatientId(null);
@@ -115,7 +113,7 @@ export const PatientsTable: React.FC = () => {
     const patient = patients.find((p:any) => p.id === patientId);
     if (patient) {
       setSelectedPatient(patient);
-      navigate('medical-records');
+      toMedicalRecords();
     }
   };
 
@@ -123,7 +121,8 @@ export const PatientsTable: React.FC = () => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date | number | undefined) => {
+    if (!date) return 'No especificado';
     return new Intl.DateTimeFormat('es-EC', {
       year: 'numeric',
       month: 'long',
@@ -131,7 +130,8 @@ export const PatientsTable: React.FC = () => {
     }).format(new Date(date));
   };
 
-  const calculateAge = (birthDate: Date) => {
+  const calculateAge = (birthDate: Date | number | undefined) => {
+    if (!birthDate) return 0;
     const today = new Date();
     const birth = new Date(birthDate);
     let age = today.getFullYear() - birth.getFullYear();
@@ -468,7 +468,11 @@ export const PatientsTable: React.FC = () => {
                     <span className="font-medium">Medicamentos:</span> {selectedPatient.medications || 'Ninguno'}
                   </div>
                   <div>
-                    <span className="font-medium">Historial Médico:</span> {selectedPatient.medicalHistory || 'Sin antecedentes'}
+                    <span className="font-medium">Historial Médico:</span> {
+                      selectedPatient.medicalHistory && selectedPatient.medicalHistory.length > 0
+                        ? `${selectedPatient.medicalHistory.length} registro(s) médico(s)`
+                        : 'Sin antecedentes'
+                    }
                   </div>
                 </div>
               </div>

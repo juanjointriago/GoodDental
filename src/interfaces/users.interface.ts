@@ -1,12 +1,14 @@
+import type { BaseEntity } from '../types/common';
+
 export type Role = "administrator" | "employee" | "customer";
+
 export type IDepartment =
   | "administration"
   | "medical"
   | "assistance"
   | "cleaning";
 
-export interface IUser {
-  id: string;
+export interface IUser extends BaseEntity {
   email: string;
   password?: string;
   confirmPassword?: string;
@@ -18,11 +20,28 @@ export interface IUser {
   avatar?: string;
   photoURL?: string;
   address: string;
-  birthDate: number;
+  birthDate?: number;
   city: string;
   country: string;
-  isActive: boolean;
   lastLogin?: number;
-  createdAt?: number;
-  updatedAt?: number;
+  department?: IDepartment;
+}
+
+// Utility types for user operations
+export type CreateUserData = Omit<IUser, 'id' | 'createdAt' | 'lastLogin' | 'updatedAt'>;
+export type UpdateUserData = Partial<Omit<IUser, 'id' | 'createdAt'>>;
+export type LoginCredentials = Pick<IUser, 'email'> & { password: string };
+
+// Auth-specific types
+export interface AuthResponse {
+  isAuthenticated: boolean;
+  user?: IUser;
+  message?: string;
+  token?: string;
+}
+
+export interface RegisterResponse {
+  isAuthenticated: boolean;
+  message: string;
+  user?: IUser;
 }

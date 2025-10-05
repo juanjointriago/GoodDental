@@ -20,7 +20,7 @@ export class AuthService {
     password: string
   ): Promise<{ user?: IUser; isAuthenticated: boolean; message: string }> => {  
     const auth = getAuth();
-    // console.debug("✅login", { email });
+     console.debug("✅login", { email });
     try {
       const { user } = await signInWithEmailAndPassword(auth, email, password);
       console.debug("✅", user.displayName);
@@ -68,6 +68,7 @@ export class AuthService {
       city,
       country,
     } = signUpUser;
+    console.debug("SignUp User Data:", { email, password });
     const auth = getAuth();
     try {
       const userCredential = await createUserWithEmailAndPassword(
@@ -87,7 +88,7 @@ export class AuthService {
           photoURL: photoURL || '',
           phone,
           address,
-          birthDate: signUpUser.birthDate,
+          // birthDate: signUpUser.birthDate,
           cc,
           city,
           country,

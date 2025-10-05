@@ -1,84 +1,41 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthPage } from './components/auth/AuthPage';
-import { DashboardLayout } from './components/layout/DashboardLayout';
-import { Dashboard } from './components/dashboard/Dashboard';
-import { PatientsTable } from './components/patients/PatientsTable';
-import { MedicalRecords } from './components/medical/MedicaRecords';
-import { Sales } from './components/sales/Sales';
-import { Inventory } from './components/inventory/Inventory';
-import { CashClose } from './components/finance/CashClose';
-import { Employees } from './components/employees/Employees';
-import { Reports } from './components/reports/Reports';
-import { Settings } from './components/settings/Settings';
-import { UserProfile } from './components/profile/UserProfile';
-import { MySales } from './components/profile/MySales';
+import { AppRouter } from './components/AppRouter';
+import { PublicRoute } from './components/routes/RouteGuards';
 import { Toaster } from './components/ui/sonner';
 import { useAuthStore } from './stores/auth.store';
 import { useThemeStore } from './stores/theme.store';
-import { useRouterStore } from './stores/router.store';
 import { usePatientsStore } from './stores/patients.store';
+import { useAuthInitializer } from './hooks/useAuthInitializer';
+import { APP_ROUTES } from './types/routes';
 
-const AppRouter: React.FC = () => {
-  const currentRoute = useRouterStore(state => state.currentRoute);
 
-  const renderCurrentRoute = () => {
-    switch (currentRoute) {
-      case 'dashboard':
-        return <Dashboard />;
-      case 'patients':
-        return <PatientsTable />;
-      case 'medical-records':
-        return <MedicalRecords />;
-      case 'sales':
-        return <Sales />;
-      case 'inventory':
-        return <Inventory />;
-      case 'cash-close':
-        return <CashClose />;
-      case 'employees':
-        return <Employees />;
-      case 'reports':
-        return <Reports />;
-      case 'settings':
-        return <Settings />;
-      case 'profile':
-        return <UserProfile />;
-      case 'my-sales':
-        return <MySales />;
-      default:
-        return <Dashboard />;
-    }
-  };
-
-  return <>{renderCurrentRoute()}</>;
-};
 
 
 
 export default function App() {
-  const user  = useAuthStore(state=>state.user);
-  const  loading = useAuthStore(state=>state.loading);
-  const  checkAuth  = useAuthStore(state=>state.checkAuth);
+  const { user, loading } = useAuthStore();
   const { initializeTheme } = useThemeStore();
   const { fetchPatients } = usePatientsStore();
   const [initialized, setInitialized] = useState(false);
 
+  // Inicializar el listener de Firebase Auth
+  useAuthInitializer();
+
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        console.log('Initializing app...');
+        console.log('🚀 Initializing GoodDental app...');
         
-        // Inicializar el tema primero
+        // Inicializar el tema
         initializeTheme();
         
-        // Verificar autenticación
-        await checkAuth();
-        
         setInitialized(true);
-        console.log('App initialized successfully');
+        console.log('✅ App initialized successfully');
         
       } catch (error) {
-        console.error('Error initializing app:', error);
+        console.error('❌ Error initializing app:', error);
         setInitialized(true); // Continuar aún si hay error
       }
     };
@@ -86,7 +43,7 @@ export default function App() {
     if (!initialized) {
       initializeApp();
     }
-  }, [initialized, initializeTheme, checkAuth]);
+  }, [initialized, initializeTheme]);
 
   // Cargar pacientes cuando el usuario esté autenticado
   useEffect(() => {
@@ -103,12 +60,12 @@ export default function App() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
           <div className="w-16 h-16 bg-gradient-to-br from-goodent-primary to-goodent-secondary rounded-full flex items-center justify-center mx-auto animate-pulse">
-            {/* <span className="text-white text-xl font-bold">G</span>
-             */}
             <img src="/assets/img/logo.png" alt="Good Dental Logo" className="w-50 h-20" />
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-goodent-primary">{import.meta.env.VITE_APP_TITLE ?? "Clinical"}</h2>
+            <h2 className="text-xl font-semibold text-goodent-primary">
+              {import.meta.env.VITE_APP_TITLE ?? "Clinical"}
+            </h2>
             <p className="text-sm text-muted-foreground">
               {!initialized ? 'Inicializando...' : 'Cargando sistema...'}
             </p>
@@ -119,14 +76,24 @@ export default function App() {
   }
 
   return (
-    <>      
-      {!user ? (
-        <AuthPage />
-      ) : (
-        <DashboardLayout>
-          <AppRouter />
-        </DashboardLayout>
-      )}
+    <BrowserRouter>
+      <Routes>
+        {/* Public route for authentication */}
+        <Route 
+          path={APP_ROUTES.AUTH} 
+          element={
+            <PublicRoute>
+              <AuthPage />
+            </PublicRoute>
+          } 
+        />
+        
+        {/* Protected routes */}
+        <Route path="/*" element={<AppRouter />} />
+        
+        {/* Redirect root to dashboard */}
+        <Route path="/" element={<Navigate to={APP_ROUTES.DASHBOARD} replace />} />
+      </Routes>
       
       <Toaster 
         position="top-right" 
@@ -138,6 +105,6 @@ export default function App() {
           },
         }}
       />
-    </>
+    </BrowserRouter>
   );
 }

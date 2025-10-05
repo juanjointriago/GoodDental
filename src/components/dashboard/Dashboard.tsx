@@ -15,8 +15,9 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/auth.store';
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import type { JSX } from 'react/jsx-runtime';
+import { usePatientsStore } from '../../stores/patients.store';
 
 // Datos simulados para gráficos
 const salesData = [
@@ -54,6 +55,18 @@ interface stats{
 export const Dashboard: React.FC = () => {
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'administrator';
+  const fetchPatients = usePatientsStore(state=>state.fetchPatients);
+  const patients = usePatientsStore(state=>state.patients);
+  const loadPatients = async ()=>{
+    await fetchPatients();
+  
+  }
+  useEffect(() => {
+    loadPatients();
+    console.debug('Pacientes en Dashboard',patients.length)
+
+  }, [])
+  
 
   const adminStats:stats[] = [
     {

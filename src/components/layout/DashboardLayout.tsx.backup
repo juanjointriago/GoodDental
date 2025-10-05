@@ -1,4 +1,39 @@
 import React, { useState } from "react";
+import { Button } from "../ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Badge } from "../ui/badge";
+import {
+  LogOut,
+  Moon,
+  Sun,
+  Menu,
+  X,
+} from "lucide-react";
+import { useAuthStore } from "../../stores/auth.store";
+import { useThemeStore } from "../../stores/theme.store";
+import { useAppNavigation } from "../../hooks/useAppNavigation";
+import { useNavigation } from "../../hooks/useNavigation";
+
+interface DashboardLayoutProps {
+  children: React.ReactNode;
+}
+interface MenuItem{
+  id: string;
+  label: string;
+  icon: React.ReactNode | any;
+  href: string;
+  roles: Role[];
+}
+
+import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -23,7 +58,6 @@ import { useThemeStore } from "../../stores/theme.store";
 import { useAppNavigation } from "../../hooks/useAppNavigation";
 import { useNavigation } from "../../hooks/useNavigation";
 import { ROUTE_CONFIGS } from "../../config/routes.config";
-import type { AppRoute } from "../../types/routes";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -42,12 +76,83 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
   const currentRoute = ROUTE_CONFIGS.find(route => route.path === location.pathname);
 
+  
+  const menuItems:MenuItem[] = [
+    {
+      id: "dashboard",
+      label: "Dashboard",
+      icon: LayoutDashboard,
+      href: "dashboard",
+      roles: ["administrator", "employee"],
+    },
+    {
+      id: "patients",
+      label: "Pacientes",
+      icon: Users,
+      href: "patients",
+      roles: ["administrator", "employee"],
+    },
+    {
+      id: "medical-records",
+      label: "Historiales Médicos",
+      icon: FileText,
+      href: "medical-records",
+      roles: ["administrator", "employee"],
+    },
+    {
+      id: "sales",
+      label: "Ventas",
+      icon: ShoppingCart,
+      href: "sales",
+      roles: ["administrator", "employee"],
+    },
+    {
+      id: "inventory",
+      label: "Inventario",
+      icon: Package,
+      href: "inventory",
+      roles: ["administrator", "employee"],
+    },
+    {
+      id: "cash-close",
+      label: "Cierre de Caja",
+      icon: DollarSign,
+      href: "cash-close",
+      roles: ["administrator"],
+    },
+    {
+      id: "employees",
+      label: "Empleados",
+      icon: UserCheck,
+      href: "employees",
+      roles: ["administrator"],
+    },
+    {
+      id: "reports",
+      label: "Reportes",
+      icon: BarChart3,
+      href: "reports",
+      roles: ["administrator"],
+    },
+    {
+      id: "settings",
+      label: "Configuraciones",
+      icon: Settings,
+      href: "settings",
+      roles: ["administrator"],
+    },
+  ];
+
+  const filteredMenuItems = menuItems.filter((item) =>
+    item.roles.includes(user?.role || "employee")
+  );
+
   const handleLogout = () => {
     logout();
   };
 
-  const handleNavigation = (path: string) => {
-    navigateTo(path as AppRoute);
+  const handleNavigation = (route: string) => {
+    navigate(route as any);
     setSidebarOpen(false);
   };
 
@@ -79,9 +184,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
       {/* Sidebar */}
       <div
-        className={`fixed left-0 top-0 z-40 h-full w-64 bg-card border-r border-border transform transition-transform duration-300 ease-in-out ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
+        className={`
+        fixed left-0 top-0 z-40 h-full w-64 bg-card border-r border-border transform transition-transform duration-300 ease-in-out
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+      `}
       >
         {/* Logo */}
         <div className="p-6 border-b border-border">
@@ -102,9 +208,9 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
         {/* Navigation */}
         <nav className="p-4 space-y-2">
-          {navigationItems.map((item) => {
-            const Icon = item.icon as React.ComponentType<{ className?: string }>;
-            const isActive = location.pathname === item.path;
+          {filteredMenuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentRoute === item.href;
 
             return (
               <Button
@@ -115,7 +221,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     ? "bg-goodent-primary hover:bg-goodent-primary/90 text-white"
                     : "hover:bg-goodent-light"
                 }`}
-                onClick={() => handleNavigation(item.path)}
+                onClick={() => handleNavigation(item.href)}
               >
                 <Icon className="mr-3 h-4 w-4" />
                 {item.label}
@@ -157,9 +263,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <header className="bg-card border-b border-border sticky top-0 z-20">
           <div className="flex items-center justify-between px-6 py-4">
             <div className="flex items-center space-x-4">
-              <div className="lg:hidden w-10" />
+              <div className="lg:hidden w-10" />{" "}
+              {/* Spacer for mobile menu button */}
               <h1 className="text-2xl font-semibold capitalize">
-                {currentRoute?.title || "Dashboard"}
+                {filteredMenuItems.find((item) => item.href === currentRoute)
+                  ?.label || "Dashboard"}
               </h1>
             </div>
 
@@ -200,21 +308,16 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  
-                  {/* Profile menu items */}
-                  {profileMenuItems.map((item) => {
-                    const Icon = item.icon as React.ComponentType<{ className?: string }>;
-                    return (
-                      <DropdownMenuItem 
-                        key={item.id}
-                        onClick={() => handleNavigation(item.path)}
-                      >
-                        <Icon className="mr-2 h-4 w-4" />
-                        <span>{item.label}</span>
-                      </DropdownMenuItem>
-                    );
-                  })}
-                  
+                  <DropdownMenuItem onClick={() => handleNavigation("profile")}>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Mi Perfil</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleNavigation("my-sales")}
+                  >
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    <span>Mis Ventas</span>
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={handleLogout}

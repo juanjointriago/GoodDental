@@ -1,126 +1,168 @@
 import type { StateCreator } from "zustand";
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
+import { getAuth, onAuthStateChanged, type User } from "firebase/auth";
 import { AuthService } from "../services/auth.service";
-import type { IUser } from "../interfaces/users.interface";
+import type { 
+  IUser, 
+  LoginCredentials, 
+  CreateUserData, 
+  AuthResponse, 
+  RegisterResponse 
+} from "../interfaces/users.interface";
+import type { LoadingState } from "../types/common";
+import { createAsyncAction, StoreError } from "../utils/store.utils";
 
-interface AuthState {
+interface AuthState extends LoadingState {
   user: IUser | null;
-  loading: boolean;
   isAuthenticated: boolean;
   
   // Actions
-  login: (email: string, password: string) => Promise<void>;
-  register: (userData: Omit<IUser, 'id' | 'createdAt' | 'lastLogin'>) => Promise<{ isAuthenticated: boolean; message: string }>;
+  login: (credentials: LoginCredentials) => Promise<void>;
+  register: (userData: CreateUserData) => Promise<RegisterResponse>;
   logout: () => void;
   setUser: (user: IUser | null) => void;
-  setLoading: (loading: boolean) => void;
   checkAuth: () => Promise<void>;
-
+  initializeAuthListener: () => () => void; // Returns unsubscribe function
+  clearError: () => void;
 }
 
-// Mock users para demo
-// const mockUsers: User[] = [
- //   {
- //     id: '1',
- //     email: 'admin@goodent.com',
- //     password: 'admin123',
- //     name: 'Dr. María González',
- //     role: 'administrator',
- //     avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=150&h=150&fit=crop&crop=face',
- //     isActive: true,
- //     createdAt: Date.now(),
- //     lastLogin: Date.now(),
- //   },
- //   {
- //     id: '2',
- //     email: 'empleado@goodent.com',
- //     password: 'empleado123',
- //     name: 'Ana Rodríguez',
- //     role: 'employee',
- //     avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
- //     isActive: true,
- //     createdAt: Date.now(),
- //     lastLogin: Date.now(),
- //   },
-// ];
+const createAuthStore: StateCreator<AuthState> = (set) => {
+  // Helper function to update auth state
+  const updateAuthState = (user: IUser | null, isAuthenticated: boolean) => {
+    set({
+      user,
+      isAuthenticated,
+      error: null
+    });
+  };
 
-export const storeAPI: StateCreator<AuthState, []> = (set, get) => ({
+  // Helper function for setting loading and error states
+  const setLoading = (loading: boolean) => set({ loading });
+  const setError = (error: string | null) => set({ error });
 
-      user: null,
-      loading: false,
-      isAuthenticated: false,
+  return {
+    // Initial state
+    user: null,
+    loading: false,
+    error: null,
+    isAuthenticated: false,
 
-      login: async (email: string, password: string) => {
-          
-          const result = await AuthService.login(email, password);
-          console.debug('auth.store/StoreAPI/loginUser ', { result });
-          if (result.isAuthenticated && result.user) {
-            set({ loading: true });
-            set({ isAuthenticated: true, user: result.user });
-            console.debug("USUARIO almacenado", get().user);
-            set({ loading: false });
-            
+    // Actions
+    login: createAsyncAction(
+      async ({ email, password }: LoginCredentials) => {
+        const result: AuthResponse = await AuthService.login(email, password);
+        
+        if (result.isAuthenticated && result.user) {
+          updateAuthState(result.user, true);
+          console.debug("User authenticated successfully", result.user.email);
         } else {
-            set({ isAuthenticated: false, user: undefined });
-            set({ loading: false });
-            throw new Error(result.message || 'Error al iniciar sesión');
+          updateAuthState(null, false);
+          throw new StoreError(result.message || 'Authentication failed');
         }
       },
+      setLoading,
+      setError
+    ),
 
-      register: async (userData) => {
-        set({ loading: true });
-        try {
-          return await AuthService.signUp(userData);
-        } finally {
-          set({ loading: false });
+    register: createAsyncAction(
+      async (userData: CreateUserData): Promise<RegisterResponse> => {
+        const result: RegisterResponse = await AuthService.signUp(userData);
+        
+        // Only update auth state if registration was successful and user data is provided
+        if (result.isAuthenticated && result.user) {
+          updateAuthState(result.user, true);
         }
+        
+        return result;
       },
+      setLoading,
+      setError
+    ),
 
-      logout: () => {
-         set({ 
-          user: null, 
-          isAuthenticated: false, 
-          loading: false 
-        });
-        AuthService.logout();
-       
-      },
+    logout: () => {
+      updateAuthState(null, false);
+      AuthService.logout();
+      console.debug("User logged out successfully");
+    },
 
-      setUser: (user) => {
-        set({ 
-          user, 
-          isAuthenticated: !!user 
-        });
-      },
+    setUser: (user: IUser | null) => {
+      updateAuthState(user, !!user);
+    },
 
-      setLoading: (loading) => {
-        set({ loading });
-      },
-
-      checkAuth: async () => {
-        console.debug('start checkAuthStatus=>')
+    checkAuth: createAsyncAction(
+      async () => {
+        console.debug('Checking authentication status...');
         const user = await AuthService.checkStatus();
+        
         if (user) {
-            // console.debug('✅Authorized', JSON.stringify(user))
-            set({ isAuthenticated: true, user });
-            
+          updateAuthState(user, true);
+          console.debug('User is authenticated:', user.email);
         } else {
-            // console.debug('❌Unauthorized', JSON.stringify(user))
-            set({ isAuthenticated: false, user: undefined });
-            set({ loading: false });
+          updateAuthState(null, false);
+          console.debug('User is not authenticated');
         }
-       
       },
+      setLoading,
+      setError
+    ),
 
-})
+    initializeAuthListener: () => {
+      const auth = getAuth();
+      
+      const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: User | null) => {
+        if (firebaseUser) {
+          // Usuario autenticado en Firebase, verificar en Firestore
+          try {
+            const userData = await AuthService.checkStatus();
+            if (userData) {
+              updateAuthState(userData, true);
+              console.debug('Auth listener: User restored from Firebase Auth:', userData.email);
+            } else {
+              // Usuario en Firebase pero no en Firestore, logout
+              updateAuthState(null, false);
+              console.debug('Auth listener: User not found in Firestore, logging out');
+              AuthService.logout();
+            }
+          } catch (error) {
+            console.error('Auth listener error:', error);
+            updateAuthState(null, false);
+          }
+        } else {
+          // No hay usuario autenticado
+          updateAuthState(null, false);
+          console.debug('Auth listener: No user authenticated');
+        }
+      });
 
+      return unsubscribe;
+    },
+
+    clearError: () => {
+      set({ error: null });
+    },
+  };
+};
 
 export const useAuthStore = create<AuthState>()(
-    devtools(
-        persist(
-            (storeAPI), {
-            name: 'auth-store'
+  devtools(
+    persist(createAuthStore, {
+      name: 'goodent-auth-storage',
+      partialize: (state) => ({
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+      }),
+      onRehydrateStorage: () => (state) => {
+        console.debug('Auth store rehydrated:', state?.user?.email || 'No user');
+        // Inicializar el listener de Firebase Auth después de la rehidratación
+        if (state) {
+          const unsubscribe = state.initializeAuthListener();
+          // Guardar la función de limpieza para uso futuro
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (window as any).__authUnsubscribe = unsubscribe;
         }
-        ))
-)
+      },
+    }),
+    { name: 'AuthStore' }
+  )
+);

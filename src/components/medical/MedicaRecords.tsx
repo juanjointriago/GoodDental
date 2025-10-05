@@ -495,7 +495,7 @@ export const MedicalRecords: React.FC = () => {
                 <option value="">Seleccionar paciente...</option>
                 {patients.map((patient) => (
                   <option key={patient.id} value={patient.id}>
-                    {patient.name} {patient.lastName} - {patient.dni}
+                    {patient.name} {patient.lastName} - {patient.cc}
                   </option>
                 ))}
               </select>
