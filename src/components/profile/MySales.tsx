@@ -19,11 +19,11 @@ import {
   XCircle
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/auth.store';
-import { useEmployeeStore } from '../../stores/employees';
+import { useEmployeesStore } from '../../stores/employees';
 
 export const MySales: React.FC = () => {
   const { user } = useAuthStore();
-  const { getSalesByEmployee, getPerformanceByEmployee, calculateCommissions } = useEmployeeStore();
+  const { getSalesByEmployee, getPerformanceByEmployee, calculateCommissions } = useEmployeesStore();
   const [selectedMonth, setSelectedMonth] = useState('2024-12');
 
   if (!user) return null;

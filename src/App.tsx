@@ -17,7 +17,7 @@ import { APP_ROUTES } from './types/routes';
 export default function App() {
   const { user, loading } = useAuthStore();
   const { initializeTheme } = useThemeStore();
-  const { fetchPatients } = usePatientsStore();
+  const { getAndSetPatients } = usePatientsStore();
   const [initialized, setInitialized] = useState(false);
 
   // Inicializar el listener de Firebase Auth
@@ -48,11 +48,11 @@ export default function App() {
   // Cargar pacientes cuando el usuario esté autenticado
   useEffect(() => {
     if (user && initialized && !loading) {
-      fetchPatients().catch(error => {
+      getAndSetPatients().catch((error: Error) => {
         console.error('Error fetching patients:', error);
       });
     }
-  }, [user, initialized, loading, fetchPatients]);
+  }, [user, initialized, loading, getAndSetPatients]);
 
   // Mostrar loading solo durante la inicialización o cuando auth está cargando
   if (!initialized || loading) {

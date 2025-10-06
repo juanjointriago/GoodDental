@@ -378,7 +378,7 @@ export const UserProfile: React.FC = () => {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span>Cuenta creada:</span>
-                  <span>{new Date(user.createdAt).toLocaleDateString()}</span>
+                  <span>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Último acceso:</span>

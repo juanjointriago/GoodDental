@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Services Test</title>
+    <style>
+        body { 
+            font-family: system-ui, -apple-system, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5; 
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+        }
+        .stats { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 15px; 
+            margin: 20px 0; 
+        }
+        .stat-card { 
+            padding: 15px; 
+            border-radius: 6px; 
+            text-align: center; 
+        }
+        .stat-card.employees { background: #e3f2fd; }
+        .stat-card.patients { background: #e8f5e8; }
+        .stat-card.enterprise { background: #f3e5f5; }
+        .buttons { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 10px; 
+            margin: 20px 0; 
+        }
+        button { 
+            padding: 10px 15px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: 500; 
+        }
+        button:disabled { 
+            opacity: 0.5; 
+            cursor: not-allowed; 
+        }
+        .btn-primary { background: #2196f3; color: white; }
+        .btn-success { background: #4caf50; color: white; }
+        .btn-warning { background: #ff9800; color: white; }
+        .btn-info { background: #00bcd4; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .results { 
+            background: #1a1a1a; 
+            color: #00ff00; 
+            padding: 15px; 
+            border-radius: 6px; 
+            font-family: 'Courier New', monospace; 
+            font-size: 12px; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            white-space: pre-wrap; 
+        }
+        .instructions { 
+            background: #fff3cd; 
+            border: 1px solid #ffeaa7; 
+            padding: 15px; 
+            border-radius: 6px; 
+            margin-top: 20px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Firebase Services Test</h1>
+        <p>Pruebas de CRUD para Empleados, Pacientes e Información de Empresa</p>
+
+        <div class="stats">
+            <div class="stat-card employees">
+                <h3>👥 Empleados</h3>
+                <p id="employeeCount" style="font-size: 24px; font-weight: bold; margin: 5px 0;">-</p>
+            </div>
+            <div class="stat-card patients">
+                <h3>🏥 Pacientes</h3>
+                <p id="patientCount" style="font-size: 24px; font-weight: bold; margin: 5px 0;">-</p>
+            </div>
+            <div class="stat-card enterprise">
+                <h3>🏢 Empresa</h3>
+                <p id="enterpriseCount" style="font-size: 24px; font-weight: bold; margin: 5px 0;">-</p>
+            </div>
+        </div>
+
+        <div class="buttons">
+            <button id="runAllTests" class="btn-primary">🚀 Ejecutar Todas las Pruebas</button>
+            <button id="testEmployees" class="btn-warning">🏢 Test Empleados</button>
+            <button id="testPatients" class="btn-success">👥 Test Pacientes</button>
+            <button id="testEnterprise" class="btn-info">🏥 Test Empresa</button>
+            <button id="clearResults" class="btn-secondary">🧹 Limpiar</button>
+        </div>
+
+        <div class="results" id="results">
+            Haz clic en "Ejecutar Todas las Pruebas" para comenzar...
+        </div>
+
+        <div class="instructions">
+            <h4>📝 Instrucciones:</h4>
+            <ol>
+                <li>Asegúrate de que Firebase esté configurado correctamente</li>
+                <li>Verifica que las variables de entorno estén definidas</li>
+                <li>Abre las herramientas de desarrollo (F12) para ver logs adicionales</li>
+                <li>Ejecuta las pruebas individuales o todas juntas</li>
+                <li>Verifica en Firebase Console que los datos se crean/actualizan/eliminan</li>
+            </ol>
+        </div>
+    </div>
+
+    <script type="module">
+        // Esta página necesita ser servida desde el proyecto React para acceder a los módulos
+        // Navegue a: http://localhost:5173/test-firebase.html
+
+        let testResults = [];
+        let isRunning = false;
+
+        function addTestResult(message, isError = false) {
+            const timestamp = new Date().toLocaleTimeString();
+            const status = isError ? '❌' : '✅';
+            const result = `${status} [${timestamp}] ${message}`;
+            testResults.push(result);
+            updateResultsDisplay();
+        }
+
+        function updateResultsDisplay() {
+            document.getElementById('results').textContent = testResults.join('\n');
+            document.getElementById('results').scrollTop = document.getElementById('results').scrollHeight;
+        }
+
+        function clearResults() {
+            testResults = [];
+            updateResultsDisplay();
+        }
+
+        function setRunning(running) {
+            isRunning = running;
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(btn => btn.disabled = running);
+        }
+
+        // Placeholder functions - these would need to import the actual services
+        async function testServices() {
+            addTestResult('🚀 Iniciando pruebas de servicios Firebase...');
+            addTestResult('⚠️  Esta es una página de ejemplo.', true);
+            addTestResult('Para ejecutar pruebas reales:');
+            addTestResult('1. Importa los servicios de Firebase en un componente React');
+            addTestResult('2. Usa el componente FirebaseTestComponent.tsx que creé');
+            addTestResult('3. Navega a /firebase-test en la aplicación');
+            addTestResult('✨ Instrucciones mostradas correctamente');
+        }
+
+        // Event listeners
+        document.getElementById('runAllTests').addEventListener('click', async () => {
+            setRunning(true);
+            clearResults();
+            await testServices();
+            setRunning(false);
+        });
+
+        document.getElementById('testEmployees').addEventListener('click', async () => {
+            setRunning(true);
+            clearResults();
+            addTestResult('🏢 Probando servicios de empleados...');
+            await testServices();
+            setRunning(false);
+        });
+
+        document.getElementById('testPatients').addEventListener('click', async () => {
+            setRunning(true);
+            clearResults();
+            addTestResult('👥 Probando servicios de pacientes...');
+            await testServices();
+            setRunning(false);
+        });
+
+        document.getElementById('testEnterprise').addEventListener('click', async () => {
+            setRunning(true);
+            clearResults();
+            addTestResult('🏥 Probando servicios de empresa...');
+            await testServices();
+            setRunning(false);
+        });
+
+        document.getElementById('clearResults').addEventListener('click', clearResults);
+
+        // Initialize
+        clearResults();
+    </script>
+</body>
+</html>

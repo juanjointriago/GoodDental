@@ -23,6 +23,7 @@ import { Reports } from '../components/reports/Reports';
 import { Settings as SettingsPage } from '../components/settings/Settings';
 import { UserProfile } from '../components/profile/UserProfile';
 import { MySales } from '../components/profile/MySales';
+import { FirebaseTestComponent } from '../components/FirebaseTestComponent';
 
 export const ROUTE_CONFIGS: RouteConfig[] = [
   {
@@ -112,5 +113,13 @@ export const ROUTE_CONFIGS: RouteConfig[] = [
     title: 'Mis Ventas',
     icon: TrendingUp,
     showInNav: false, // Se muestra en dropdown de usuario
+  },
+  {
+    path: APP_ROUTES.FIREBASE_TEST,
+    element: FirebaseTestComponent,
+    roles: ['administrator'],
+    title: 'Firebase Test',
+    icon: Settings,
+    showInNav: true, // Mostrar en desarrollo
   },
 ];

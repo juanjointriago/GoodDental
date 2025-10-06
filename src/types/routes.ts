@@ -1,4 +1,4 @@
-import { type Role } from '../stores/auth.store';
+import { type Role } from '../interfaces/users.interface';
 
 export interface RouteConfig {
   path: string;
@@ -33,6 +33,7 @@ export const APP_ROUTES = {
   SETTINGS: '/settings',
   PROFILE: '/profile',
   MY_SALES: '/my-sales',
+  FIREBASE_TEST: '/firebase-test',
 } as const;
 
 export type AppRoute = typeof APP_ROUTES[keyof typeof APP_ROUTES];

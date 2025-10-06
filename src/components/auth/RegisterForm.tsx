@@ -22,7 +22,7 @@ const registerSchema = z.object({
     city: z.string().optional(),
     country: z.string().optional(),
     confirmPassword: z.string(),
-    role: z.enum(['administrator', 'employee',]),
+    role: z.enum(['administrator', 'employee', 'customer']),
     avatar: z.string().optional(),
     photoURL: z.string().optional(),
     lastlogin: z.number().optional(),
@@ -71,16 +71,16 @@ export const RegisterForm: FC = () => {
         email: data.email,
         role: data.role,
         password: data.password,
-        bornDate: data.bornDate!,
+        birthDate: data.bornDate ? new Date(data.bornDate).getTime() : undefined,
         cc: data.cc!,
         phone: data.phone!,
         city: data.city!,
         country: data.country!,
         address: data.address!,
+        lastName: '', // Campo requerido
         isActive: true,
         avatar: data.avatar!,
-        photoURL: data.photoURL!,
-        updatedAt: Date.now()
+        photoURL: data.photoURL!
       });
 
       if (response.isAuthenticated) {

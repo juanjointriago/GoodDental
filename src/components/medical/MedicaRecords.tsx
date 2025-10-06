@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -19,66 +19,26 @@ import {
   Eye,
 } from 'lucide-react';
 import { Dentogram } from './Dentogram';
-import { usePatients } from '../../hooks/usePatients';
+import { usePatientsStore } from '../../stores/patients.store';
+import { useMedicalRecordsStore } from '../../stores/medical-records.store';
+import { useAuthStore } from '../../stores/auth.store';
 import { toast } from 'sonner';
 
-interface medicalRecords{
-  id: string;
-  patientId: string;
-  patient: {
-    name: string;
-    lastName: string;
-    dni: string;
-    avatar: string | null | undefined;
-  };
-  date: string;
-  diagnosis: string;
-  treatment: string;
-  observations: string;
-  employeeId: string;
-  employee: {
-    name: string;
-  };
-  nextAppointment: string;
-  createdAt: string;
-}
-// Datos simulados de historias clínicas
-const mockMedicalRecords:medicalRecords[] = [
-  {
-    id: '1',
-    patientId: '1',
-    patient: { name: 'Juan', lastName: 'Pérez', dni: '12345678', avatar: null },
-    date: '2024-01-15',
-    diagnosis: 'Caries en molar superior derecho, gingivitis leve',
-    treatment: 'Limpieza dental, empaste con resina compuesta en pieza 16',
-    observations: 'Paciente con buena colaboración, se recomienda usar hilo dental diariamente',
-    employeeId: 'employee-demo',
-    employee: { name: 'Dr. Empleado' },
-    nextAppointment: '2024-02-15',
-    createdAt: '2024-01-15T10:00:00Z',
-  },
-  {
-    id: '2',
-    patientId: '2',
-    patient: { name: 'María', lastName: 'García', dni: '87654321', avatar: null },
-    date: '2024-01-10',
-    diagnosis: 'Revisión de rutina, estado dental general bueno',
-    treatment: 'Profilaxis dental, aplicación de flúor',
-    observations: 'Mantener rutina de higiene actual',
-    employeeId: 'employee-demo',
-    employee: { name: 'Dr. Empleado' },
-    nextAppointment: '2024-07-10',
-    createdAt: '2024-01-10T14:30:00Z',
-  },
-];
-
 export const MedicalRecords: React.FC = () => {
-  const { patients } = usePatients();
+  const { patients, getAndSetPatients } = usePatientsStore();
+  const { 
+    medicalRecords, 
+    createMedicalRecord, 
+    getAndSetMedicalRecords,
+    loading: recordsLoading 
+  } = useMedicalRecordsStore();
+  const { user } = useAuthStore();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPatient, setSelectedPatient] = useState<string | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [medicalRecords, setMedicalRecords] = useState(mockMedicalRecords);
   const [currentView, setCurrentView] = useState<'list' | 'patient-detail'>('list');
+  const [isLoading, setIsLoading] = useState(true);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -90,12 +50,60 @@ export const MedicalRecords: React.FC = () => {
     nextAppointment: '',
   });
 
-  const filteredRecords = medicalRecords.filter(record =>
-    record.patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    record.patient.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    record.patient.dni.includes(searchTerm) ||
-    record.diagnosis.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Load data on mount
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        if (patients.length === 0) {
+          await getAndSetPatients();
+        }
+        await getAndSetMedicalRecords();
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadData();
+  }, [getAndSetPatients, getAndSetMedicalRecords, patients.length]);
+
+  // Update loading state when data changes
+  useEffect(() => {
+    if (patients.length > 0 && !recordsLoading) {
+      setIsLoading(false);
+    }
+  }, [patients.length, recordsLoading]);
+
+  // Helper function to get patient by ID
+  const getPatientById = (patientId: string) => {
+    return patients.find(p => p.id === patientId);
+  };
+
+  // Get enriched medical records with patient data
+  const enrichedMedicalRecords = medicalRecords.map(record => {
+    const patient = getPatientById(record.patientId);
+    const employee = { name: user?.name || 'Dr. Usuario' }; // Usar datos del usuario actual
+    return {
+      ...record,
+      patient: patient ? {
+        name: patient.name,
+        lastName: patient.lastName,
+        cc: patient.cc,
+        avatar: patient.avatar
+      } : null,
+      employee
+    };
+  });
+
+  const filteredRecords = enrichedMedicalRecords.filter(record => {
+    if (!record.patient) return false;
+    return record.patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           record.patient.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           record.patient.cc.includes(searchTerm) ||
+           record.diagnosis.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -122,26 +130,18 @@ export const MedicalRecords: React.FC = () => {
       const patient = patients.find(p => p.id === formData.patientId);
       if (!patient) throw new Error('Paciente no encontrado');
 
-      const newRecord:medicalRecords = {
-        id: Date.now().toString(),
+      const newRecordData = {
         patientId: formData.patientId,
-        patient: { 
-          name: patient.name, 
-          lastName: patient.lastName, 
-          dni: patient.dni,
-          avatar: patient.avatar 
-        },
+        employeeId: user?.id || 'current-user',
         date: formData.date,
         diagnosis: formData.diagnosis,
         treatment: formData.treatment,
-        observations: formData.observations,
-        employeeId: 'current-user',
-        employee: { name: 'Usuario Actual' },
-        nextAppointment: formData.nextAppointment,
-        createdAt: new Date().toISOString(),
+        observations: formData.observations || '',
+        nextAppointment: formData.nextAppointment || '',
+        isActive: true,
       };
 
-      setMedicalRecords(prevItems => [...prevItems, newRecord]);
+      await createMedicalRecord(newRecordData);
       setIsCreateDialogOpen(false);
       setFormData({
         patientId: '',
@@ -164,7 +164,7 @@ export const MedicalRecords: React.FC = () => {
 
   if (currentView === 'patient-detail' && selectedPatient) {
     const patient = patients.find(p => p.id === selectedPatient);
-    const patientRecords = medicalRecords.filter(r => r.patientId === selectedPatient);
+    const patientRecords = enrichedMedicalRecords.filter(r => r.patientId === selectedPatient);
 
     return (
       <div className="space-y-6">
@@ -209,8 +209,8 @@ export const MedicalRecords: React.FC = () => {
                     <p className="font-medium">{patient.name} {patient.lastName}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">DNI</label>
-                    <p className="font-medium">{patient.dni}</p>
+                    <label className="text-sm font-medium text-muted-foreground">Cédula</label>
+                    <p className="font-medium">{patient.cc}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Teléfono</label>
@@ -219,7 +219,7 @@ export const MedicalRecords: React.FC = () => {
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">Edad</label>
                     <p className="font-medium">
-                      {new Date().getFullYear() - new Date(patient.birthDate).getFullYear()} años
+                      {patient.birthDate ? new Date().getFullYear() - new Date(patient.birthDate).getFullYear() : 'N/A'} años
                     </p>
                   </div>
                 </div>
@@ -280,7 +280,7 @@ export const MedicalRecords: React.FC = () => {
                                   {new Date(record.date).toLocaleDateString()}
                                 </Badge>
                                 <span className="text-sm text-muted-foreground">
-                                  por {record.employee.name}
+                                  por {record.employee?.name || 'Dr. Usuario'}
                                 </span>
                               </div>
                               {record.nextAppointment && (
@@ -393,34 +393,40 @@ export const MedicalRecords: React.FC = () => {
       {/* Records Table */}
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Paciente</TableHead>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Diagnóstico</TableHead>
-                <TableHead>Doctor</TableHead>
-                <TableHead>Próxima Cita</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredRecords.map((record) => (
+          {isLoading ? (
+            <div className="text-center py-8">
+              <div className="w-8 h-8 border-2 border-goodent-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-muted-foreground">Cargando historias clínicas...</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Paciente</TableHead>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Diagnóstico</TableHead>
+                  <TableHead>Doctor</TableHead>
+                  <TableHead>Próxima Cita</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredRecords.map((record) => (
                 <TableRow key={record.id} className="hover:bg-goodent-light/20">
                   <TableCell>
                     <div className="flex items-center space-x-3">
                       <Avatar>
-                        <AvatarImage src={record.patient.avatar!} />
+                        <AvatarImage src={record.patient?.avatar || ''} />
                         <AvatarFallback className="bg-goodent-primary text-white">
-                          {record.patient.name.charAt(0)}{record.patient.lastName.charAt(0)}
+                          {record.patient?.name?.charAt(0) || '?'}{record.patient?.lastName?.charAt(0) || '?'}
                         </AvatarFallback>
                       </Avatar>
                       <div>
                         <div className="font-medium">
-                          {record.patient.name} {record.patient.lastName}
+                          {record.patient?.name || 'Paciente'} {record.patient?.lastName || 'Desconocido'}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          DNI: {record.patient.dni}
+                          CC: {record.patient?.cc || 'N/A'}
                         </div>
                       </div>
                     </div>
@@ -438,7 +444,7 @@ export const MedicalRecords: React.FC = () => {
                   <TableCell>
                     <div className="flex items-center">
                       <Stethoscope className="mr-1 h-3 w-3 text-muted-foreground" />
-                      {record.employee.name}
+                      {record.employee?.name || 'Dr. Usuario'}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -461,11 +467,12 @@ export const MedicalRecords: React.FC = () => {
                     </Button>
                   </TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                ))}
+              </TableBody>
+            </Table>
+          )}
           
-          {filteredRecords.length === 0 && (
+          {!isLoading && filteredRecords.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
               <FileText className="mx-auto h-12 w-12 mb-4 opacity-50" />
               <p>No se encontraron historias clínicas</p>

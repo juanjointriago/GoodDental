@@ -18,7 +18,7 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/auth.store';
-import { useEmployeeStore, type Employee } from '../../stores/employees';
+import { useEmployeesStore, type Employee } from '../../stores/employees';
 import { toast } from 'sonner';
 
 // No necesitamos tipos ni datos simulados aquí, los manejamos en el store
@@ -38,7 +38,7 @@ const STATUS_LABELS = {
 
 export const Employees: React.FC = () => {
   const { user } = useAuthStore();
-  const { employees, addEmployee } = useEmployeeStore();
+  const { employees, createEmployee } = useEmployeesStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [isEmployeeDialogOpen, setIsEmployeeDialogOpen] = useState(false);
 
@@ -47,20 +47,25 @@ export const Employees: React.FC = () => {
     name: '',
     lastName: '',
     email: '',
-    dni: '',
+    cc: '',
     phone: '',
     position: '',
     department: 'medical' as Employee['department'],
     salary: 0,
     status: 'active' as Employee['status'],
     hireDate: new Date().toISOString().split('T')[0],
+    role: 'employee' as Employee['role'],
+    address: '',
+    city: '',
+    country: '',
+    isActive: true,
   });
 
   const filteredEmployees = employees.filter(employee =>
     employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     employee.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    employee.dni.includes(searchTerm) ||
+    employee.cc.includes(searchTerm) ||
     employee.position.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -68,16 +73,16 @@ export const Employees: React.FC = () => {
   const activeEmployees = employees.filter(e => e.status === 'active').length;
   const totalSalaries = employees.reduce((sum, employee) => sum + employee.salary, 0);
 
-  const createEmployee = async (e: React.FormEvent) => {
+  const handleCreateEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (!employeeForm.name || !employeeForm.lastName || !employeeForm.email || !employeeForm.dni) {
+      if (!employeeForm.name || !employeeForm.lastName || !employeeForm.email || !employeeForm.cc) {
         toast.error('Completa todos los campos requeridos');
         return;
       }
 
-      if (employees.some(emp => emp.dni === employeeForm.dni)) {
-        toast.error('Ya existe un empleado con ese DNI');
+      if (employees.some(emp => emp.cc === employeeForm.cc)) {
+        toast.error('Ya existe un empleado con esa cédula');
         return;
       }
 
@@ -86,19 +91,27 @@ export const Employees: React.FC = () => {
         return;
       }
 
-      addEmployee(employeeForm);
+      createEmployee({
+        ...employeeForm,
+        id: Date.now().toString(), // Temporal ID, Firebase generará uno nuevo
+      });
       setIsEmployeeDialogOpen(false);
       setEmployeeForm({
         name: '',
         lastName: '',
         email: '',
-        dni: '',
+        cc: '',
         phone: '',
         position: '',
         department: 'medical',
         salary: 0,
         status: 'active',
         hireDate: new Date().toISOString().split('T')[0],
+        role: 'employee',
+        address: '',
+        city: '',
+        country: '',
+        isActive: true,
       });
       toast.success('Empleado creado correctamente');
     } catch (error) {
@@ -197,7 +210,7 @@ export const Employees: React.FC = () => {
         <CardContent>
           <div className="flex items-center space-x-4">
             <Input
-              placeholder="Buscar por nombre, email, DNI o cargo..."
+              placeholder="Buscar por nombre, email, cédula o cargo..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="max-w-sm"
@@ -243,7 +256,7 @@ export const Employees: React.FC = () => {
                           {employee.email}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          DNI: {employee.dni}
+                          CC: {employee.cc}
                         </div>
                       </div>
                     </div>
@@ -294,7 +307,7 @@ export const Employees: React.FC = () => {
               Registra un nuevo empleado en el sistema
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={createEmployee} className="space-y-4">
+          <form onSubmit={handleCreateEmployee} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium">Nombre</label>
@@ -321,10 +334,10 @@ export const Employees: React.FC = () => {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium">DNI</label>
+                <label className="text-sm font-medium">Cédula</label>
                 <Input
-                  value={employeeForm.dni}
-                  onChange={(e) => setEmployeeForm(prev => ({ ...prev, dni: e.target.value }))}
+                  value={employeeForm.cc}
+                  onChange={(e) => setEmployeeForm(prev => ({ ...prev, cc: e.target.value }))}
                   placeholder="12345678"
                   required
                   className="mt-1"

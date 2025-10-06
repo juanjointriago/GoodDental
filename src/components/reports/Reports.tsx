@@ -21,7 +21,7 @@ import {
   LogOut
 } from 'lucide-react';
 // import { useAuthStore } from '../../stores/auth.store';
-import { useEmployeeStore } from '../../stores/employees';
+import { useEmployeesStore } from '../../stores/employees';
 
 interface SessionData {
   id: string;
@@ -35,7 +35,7 @@ interface SessionData {
 
 export const Reports: React.FC = () => {
 //   const { user } = useAuthStore();
-  const { employees } = useEmployeeStore();
+  const { employees } = useEmployeesStore();
   const [selectedEmployee, setSelectedEmployee] = useState<string>('');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');

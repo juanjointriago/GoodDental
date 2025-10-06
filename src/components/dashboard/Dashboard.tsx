@@ -55,17 +55,16 @@ interface stats{
 export const Dashboard: React.FC = () => {
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'administrator';
-  const fetchPatients = usePatientsStore(state=>state.fetchPatients);
+  const getAndSetPatients = usePatientsStore(state=>state.getAndSetPatients);
   const patients = usePatientsStore(state=>state.patients);
-  const loadPatients = async ()=>{
-    await fetchPatients();
-  
-  }
   useEffect(() => {
+    const loadPatients = async ()=>{
+      await getAndSetPatients();
+      console.debug('Pacientes en Dashboard',patients.length)
+    }
     loadPatients();
-    console.debug('Pacientes en Dashboard',patients.length)
 
-  }, [])
+  }, [getAndSetPatients, patients.length])
   
 
   const adminStats:stats[] = [
