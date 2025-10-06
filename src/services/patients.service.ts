@@ -7,6 +7,30 @@ export class PatientsService {
     static getPatients = async (): Promise<IPatient[]> => 
         await getDocsFromCollection<IPatient>(import.meta.env.VITE_COLLECTION_PATIENTS || "patients");
     
+    static createPatientFromExistingUser = async (userId: string, patientData: CreatePatientData): Promise<IPatient> => {
+        try {
+            // Solo crear documento del paciente sin crear usuario de auth
+            const patientWithTimestamps: IPatient = {
+                ...patientData,
+                id: userId, // Usar el ID del usuario existente
+                createdAt: Date.now(),
+                updatedAt: Date.now(),
+            };
+
+            // Guardar en colección patients usando el ID del usuario existente
+            const savedPatient = await setItem(
+                import.meta.env.VITE_COLLECTION_PATIENTS || "patients", 
+                patientWithTimestamps
+            ) as IPatient;
+
+            return savedPatient;
+        } catch (error) {
+            console.error('Error creating patient from existing user:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
+            throw new Error(`Error al crear paciente: ${errorMessage}`);
+        }
+    };
+    
     static createPatient = async (patientData: CreatePatientData): Promise<IPatient> => {
         const auth = getAuth();
         
@@ -94,4 +118,13 @@ export class PatientsService {
     
     static deletePatient = async (id: string): Promise<void> => 
         await deleteItem(import.meta.env.VITE_COLLECTION_PATIENTS || "patients", id);
+
+    static deactivatePatient = async (id: string): Promise<void> => {
+        const updatedPatient = {
+            id,
+            isActive: false,
+            updatedAt: Date.now(),
+        };
+        await updateItem(import.meta.env.VITE_COLLECTION_PATIENTS || "patients", updatedPatient);
+    };
 }

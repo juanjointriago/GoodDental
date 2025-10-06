@@ -156,7 +156,7 @@ export const RegisterForm: FC = () => {
                 <SelectContent>
                   {import.meta.env.DEV &&<SelectItem value="administrator">Administrador</SelectItem>}
                   <SelectItem value="employee">Médico</SelectItem>
-                  <SelectItem value="patient">Patient</SelectItem>
+                  <SelectItem value="customer">Paciente</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />

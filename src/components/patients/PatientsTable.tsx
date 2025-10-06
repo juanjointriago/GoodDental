@@ -2,19 +2,33 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { Plus } from 'lucide-react';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle 
+} from '../ui/dialog';
+// import { Plus } from 'lucide-react'; // Temporalmente comentado
 import { usePatientsStore } from '../../stores/patients.store';
+import { PatientsService } from '../../services/patients.service';
 import type { IPatient } from '../../interfaces/patients.interface';
-import { AddPatientForm } from './AddPatientForm';
+import { PatientDetailsModal } from './PatientDetailsModal';
+import { toast } from 'sonner';
+// import { AddPatientForm } from './AddPatientForm'; // Temporalmente comentado
 
 export function PatientsTable() {
   const [localSearchTerm, setLocalSearchTerm] = useState('');
-  const [isAddPatientModalOpen, setIsAddPatientModalOpen] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState<IPatient | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [patientToDelete, setPatientToDelete] = useState<IPatient | null>(null);
+  // const [isAddPatientModalOpen, setIsAddPatientModalOpen] = useState(false); // Temporalmente comentado
   
   const {
     patients,
     getAndSetPatients,
-    deletePatient,
     setSearchTerm,
     filteredPatients,
   } = usePatientsStore();
@@ -29,22 +43,45 @@ export function PatientsTable() {
     setSearchTerm(localSearchTerm);
   }, [localSearchTerm, setSearchTerm]);
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm('¿Estás seguro de eliminar este paciente?')) {
-      await deletePatient(id);
+  const handleViewPatient = (patient: IPatient) => {
+    setSelectedPatient(patient);
+    setIsDetailsModalOpen(true);
+  };
+
+  const handleDeleteClick = (patient: IPatient) => {
+    setPatientToDelete(patient);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (patientToDelete) {
+      try {
+        // Usar la nueva función de desactivación
+        await PatientsService.deactivatePatient(patientToDelete.id);
+        toast.success('Paciente desactivado correctamente');
+        setIsDeleteModalOpen(false);
+        setPatientToDelete(null);
+        // Recargar la lista de pacientes
+        getAndSetPatients();
+      } catch (error) {
+        toast.error('Error al desactivar paciente');
+        console.error('Error deactivating patient:', error);
+      }
     }
   };
 
   return (
     <div className="space-y-4">
-      {/* Header with Add Patient Button */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Pacientes</h1>
-          <p className="text-muted-foreground">
-            Gestiona la información de los pacientes registrados
-          </p>
-        </div>
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Pacientes</h1>
+        <p className="text-muted-foreground">
+          Gestiona la información de los pacientes registrados
+        </p>
+      </div>
+      
+      {/* Botón "Agregar Paciente" temporalmente oculto
+      <div className="flex justify-end mb-4">
         <Button 
           className="bg-goodent-primary hover:bg-goodent-primary/90"
           onClick={() => setIsAddPatientModalOpen(true)}
@@ -53,6 +90,7 @@ export function PatientsTable() {
           Agregar Paciente
         </Button>
       </div>
+      */}
 
       <Card>
         <CardHeader>
@@ -101,14 +139,14 @@ export function PatientsTable() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => console.log('Ver:', patient.id)}
+                          onClick={() => handleViewPatient(patient)}
                         >
                           Ver
                         </Button>
                         <Button
                           variant="destructive"
                           size="sm"
-                          onClick={() => handleDelete(patient.id)}
+                          onClick={() => handleDeleteClick(patient)}
                         >
                           Eliminar
                         </Button>
@@ -126,11 +164,54 @@ export function PatientsTable() {
         </CardContent>
       </Card>
 
-      {/* Add Patient Modal */}
+      {/* Patient Details Modal */}
+      <PatientDetailsModal 
+        patient={selectedPatient}
+        open={isDetailsModalOpen}
+        onClose={() => {
+          setIsDetailsModalOpen(false);
+          setSelectedPatient(null);
+        }}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar Eliminación</DialogTitle>
+            <DialogDescription>
+              ¿Estás seguro de que deseas desactivar el paciente <strong>{patientToDelete?.name} {patientToDelete?.lastName}</strong>?
+              <br />
+              <br />
+              Esta acción cambiará el estado del paciente a inactivo. La información no se eliminará permanentemente y podrá ser reactivada posteriormente.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsDeleteModalOpen(false);
+                setPatientToDelete(null);
+              }}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={confirmDelete}
+            >
+              Confirmar Desactivación
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Patient Modal - Temporalmente comentado
       <AddPatientForm 
         open={isAddPatientModalOpen} 
         onClose={() => setIsAddPatientModalOpen(false)} 
       />
+      */}
     </div>
   );
 }

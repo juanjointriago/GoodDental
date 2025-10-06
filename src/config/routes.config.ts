@@ -14,6 +14,7 @@ import {
 import { type RouteConfig, APP_ROUTES } from '../types/routes';
 import { Dashboard } from '../components/dashboard/Dashboard';
 import { PatientsTable } from '../components/patients/PatientsTable';
+import { UsersTable } from '../components/users/UsersTable';
 import { MedicalRecords } from '../components/medical/MedicaRecords';
 import { Sales } from '../components/sales/Sales';
 import { Inventory } from '../components/inventory/Inventory';
@@ -40,6 +41,14 @@ export const ROUTE_CONFIGS: RouteConfig[] = [
     roles: ['administrator', 'employee'],
     title: 'Pacientes',
     icon: Users,
+    showInNav: true,
+  },
+  {
+    path: APP_ROUTES.USERS,
+    element: UsersTable,
+    roles: ['administrator', 'employee'],
+    title: 'Usuarios',
+    icon: UserCheck,
     showInNav: true,
   },
   {

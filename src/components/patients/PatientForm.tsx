@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react';
+import { type FC } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -35,11 +35,13 @@ type PatientFormData = z.infer<typeof patientSchema>;
 interface PatientFormProps {
   patient?: IPatient | null;
   onSuccess?: () => void;
+  customCreateFunction?: (data: any) => Promise<void>;
 }
 
-export const PatientForm: React.FC<PatientFormProps> = ({ 
+export const PatientForm: FC<PatientFormProps> = ({ 
   patient, 
-  onSuccess
+  onSuccess,
+  customCreateFunction
 }) => {
   const { createPatient, updatePatient } = usePatientsStore();
   const isEditing = !!patient;
@@ -86,17 +88,23 @@ export const PatientForm: React.FC<PatientFormProps> = ({
         });
         toast.success('Paciente actualizado correctamente');
       } else {
-        await createPatient({
-          ...patientData,
-          birthDate: new Date(data.birthDate).getTime(),
-          lastName: '',
-          cc: `temp-${Date.now()}`,
-          role: 'customer',
-          city: '',
-          country: '',
-          medicalHistory: [],
-          isActive: true,
-        });
+        if (customCreateFunction) {
+          // Usar función personalizada si se proporciona
+          await customCreateFunction(patientData);
+        } else {
+          // Usar función por defecto del store
+          await createPatient({
+            ...patientData,
+            birthDate: new Date(data.birthDate).getTime(),
+            lastName: '',
+            cc: `temp-${Date.now()}`,
+            role: 'customer',
+            city: '',
+            country: '',
+            medicalHistory: [],
+            isActive: true,
+          });
+        }
         toast.success('Paciente registrado correctamente');
         form.reset();
       }

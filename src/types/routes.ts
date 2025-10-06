@@ -24,6 +24,7 @@ export const APP_ROUTES = {
   // Private routes
   DASHBOARD: '/dashboard',
   PATIENTS: '/patients',
+  USERS: '/users',
   MEDICAL_RECORDS: '/medical-records',
   SALES: '/sales', 
   INVENTORY: '/inventory',
